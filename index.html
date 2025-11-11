@@ -1,0 +1,395 @@
+<!DOCTYPE html><!-- 未经允许禁止盗用-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>杂货铺MSL入口</title>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 100vw;
+            min-height: 100vh; /* 改为最小高度，支持内容超出滚动 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 从顶部开始布局，而非居中 */
+            align-items: center;
+            background: linear-gradient(45deg, #ff0000, #ff9900, #ffff00, #00ff00, #00ffff, #0000ff, #9900ff, #ff00ff);
+            background-size: 400% 400%;
+            animation: flow 15s ease infinite;
+            padding: 20px;
+            padding-bottom: 40px; /* 底部留空，避免内容被遮挡 */
+        }
+        @keyframes flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* 注意事项：红白配色+超大字体+醒目样式 */
+        .notice {
+            font-size: 32px;
+            font-weight: 900;
+            color: #ffffff;
+            background-color: #ff0000;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin: 20px 0; /* 上下都留间距 */
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255,255,255,0.8);
+            z-index: 20;
+        }
+        /* 时间样式：放大字体，保持红蓝对比 */
+        .time-container {
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+        .beijing-time {
+            font-size: 30px;
+            color: #ff0000;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .run-duration {
+            font-size: 28px;
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .jump-btn {
+            padding: 20px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.7);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            cursor: pointer;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .jump-btn:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+        .kuaishou-id {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .thanks-text {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+        .police-text {
+            font-size: 18px;
+            color: #ff0000;
+            font-weight: 900;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+        /* 底部信息容器：统一布局版权+备案号 */
+        .footer-info {
+            text-align: center;
+            margin-top: 30px; /* 与上方内容拉开间距 */
+            z-index: 10;
+        }
+        /* 版权信息：小字体、白色、不加粗 */
+        .copyright {
+            font-size: 12px;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+        /* 备案号样式：更小字体、蓝色、不加粗，增加下划线标识 */
+        .record {
+            font-size: 11px;
+            color: #0099ff;
+            text-decoration: underline;
+        }
+        .verify-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9); /* 加深遮罩，强化锁定感 */
+            backdrop-filter: blur(4px); /* 背景模糊，突出弹窗 */
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            cursor: not-allowed; /* 提示不可操作背景 */
+        }
+        .modal-box {
+            width: 85%;
+            max-width: 350px;
+            background: #fff;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(255,255,255,0.5);
+            cursor: default; /* 恢复弹窗内正常指针 */
+        }
+        .slider-container {
+            width: 100%;
+            height: 50px;
+            background: #f5f5f5;
+            border-radius: 25px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .slider-bg {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff9900);
+            transition: width 0.3s ease;
+        }
+        .slider-btn {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+        }
+        .slider-text {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #666;
+            pointer-events: none;
+        }
+        .verify-success {
+            color: #4CAF50;
+            font-size: 16px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 注意事项：红白配色+超大字体，置顶显示 -->
+    <div class="notice">注意事项：如果打不开请使用浏览器打开</div>
+    
+    <!-- 时间容器：字体放大，颜色调整为红白 -->
+    <div class="time-container">
+        <div class="beijing-time" id="beijingTime">加载中...</div>
+        <div class="run-duration" id="runDuration">服务器已运行：00天00时00分00秒</div>
+    </div>
+    
+    <div class="kuaishou-id">唯一快手号: LEWCNM123</div>
+    <div class="thanks-text">感谢你的使用</div>
+    <button class="jump-btn" onclick="showVerify('msl')">杂货店msl</button>
+    <button class="jump-btn" onclick="showVerify('msl2')">杂货店msl2</button>
+    <div class="police-text">公安机关已接入🚔</div>
+
+    <!-- 底部信息：版权+备案号统一容器 -->
+    <div class="footer-info">
+        <div class="copyright">Copyright © 2023-2025 杂货店 All Rights Reserved.</div>
+        <div class="record">晋ICP备2025065813号</div>
+    </div>
+
+    <div class="verify-modal" id="verifyModal">
+        <div class="modal-box">
+            <h3 style="font-size:20px; margin-bottom:10px; color:#333;">请完成人机验证</h3>
+            <p style="font-size:14px; color:#666; margin-bottom:15px;">拖动滑块至最右侧完成验证</p>
+            <div class="slider-container" id="sliderContainer">
+                <div class="slider-bg" id="sliderBg"></div>
+                <div class="slider-btn" id="sliderBtn">→</div>
+                <div class="slider-text">拖动滑块验证</div>
+            </div>
+            <div class="verify-success" id="verifySuccess">✅ 验证成功！即将跳转并刷新...</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // 目标链接变量
+        let targetLink = "";
+        // 获取DOM元素
+        const verifyModal = document.getElementById("verifyModal");
+        const sliderContainer = document.getElementById("sliderContainer");
+        const sliderBg = document.getElementById("sliderBg");
+        const sliderBtn = document.getElementById("sliderBtn");
+        const verifySuccess = document.getElementById("verifySuccess");
+        const beijingTimeEl = document.getElementById("beijingTime");
+        const runDurationEl = document.getElementById("runDuration");
+        // 拖动状态和容器宽度变量
+        let isDragging = false;
+        let containerWidth = 0;
+        // 固定起始时间：2025年11月11日 05:36:00（北京时间）
+        const fixedStartTime = new Date(2025, 10, 11, 5, 36, 0).getTime(); // 月份0=1月，11月为10
+        // 一年的毫秒数（按365天计算，忽略闰年）
+        const oneYearMs = 1000 * 60 * 60 * 24 * 365;
+
+        // 格式化北京时间（纯数字：年-月-日 时:分:秒）
+        function formatBeijingTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // 计算并格式化服务器运行时长（分隔符改为中文文字，自适应年/天/时/分/秒）
+        function formatCodeRunDuration() {
+            const currentTime = new Date().getTime();
+            let durationMs = currentTime - fixedStartTime;
+            if (durationMs < 0) durationMs = 0; // 时长为负时显示0
+
+            let years = 0;
+            let days = 0;
+            // 超过1年计算年数
+            if (durationMs >= oneYearMs) {
+                years = Math.floor(durationMs / oneYearMs);
+                durationMs = durationMs % oneYearMs;
+            }
+            // 计算剩余时间单位
+            days = Math.floor(durationMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((durationMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((durationMs % (1000 * 60)) / 1000);
+
+            // 补零为两位数
+            const y = String(years).padStart(2, '0');
+            const d = String(days).padStart(2, '0');
+            const h = String(hours).padStart(2, '0');
+            const m = String(minutes).padStart(2, '0');
+            const s = String(seconds).padStart(2, '0');
+
+            // 自适应显示格式
+            if (years > 0) {
+                return `服务器已运行：${y}年${d}天${h}时${m}分${s}秒`;
+            } else {
+                return `服务器已运行：${d}天${h}时${m}分${s}秒`;
+            }
+        }
+
+        // 更新时间显示（每秒执行一次）
+        function updateTimeDisplay() {
+            beijingTimeEl.textContent = formatBeijingTime();
+            runDurationEl.textContent = formatCodeRunDuration();
+        }
+
+        // 显示验证弹窗 + 锁定窗口
+        function showVerify(type) {
+            // 设置目标链接
+            targetLink = type === 'msl' ? 'https://ksmsl.449cf.com/' : 'http://mslyyds1.734km.com/';
+            // 重置滑块状态
+            sliderBg.style.width = '0';
+            sliderBtn.style.left = '0';
+            verifySuccess.style.display = 'none';
+            // 显示弹窗
+            verifyModal.style.display = 'flex';
+            containerWidth = sliderContainer.offsetWidth;
+            // 锁定窗口：禁止滚动 + 禁止触摸默认行为
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+        }
+
+        // 滑块开始拖动
+        function startDrag(e) {
+            isDragging = true;
+            // 拖动时禁用过渡动画，确保实时跟随
+            sliderBtn.style.transition = 'none';
+            sliderBg.style.transition = 'none';
+            e.preventDefault();
+        }
+
+        // 滑块拖动中
+        function dragMove(e) {
+            if (!isDragging) return;
+            // 获取鼠标/触摸坐标
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            // 计算滑块位置（限制在容器内）
+            const containerRect = sliderContainer.getBoundingClientRect();
+            let left = clientX - containerRect.left - 25; // 居中偏移
+            left = Math.max(0, Math.min(left, containerWidth - 50));
+            // 更新滑块和背景条位置
+            sliderBtn.style.left = `${left}px`;
+            sliderBg.style.width = `${left + 50}px`;
+        }
+
+        // 滑块结束拖动 + 解锁窗口
+        function endDrag() {
+            if (!isDragging) return;
+            isDragging = false;
+            // 恢复过渡动画
+            sliderBtn.style.transition = 'left 0.3s ease';
+            sliderBg.style.transition = 'width 0.3s ease';
+            
+            // 验证通过条件：滑块位置达到容器宽度的80%
+            if (parseInt(sliderBtn.style.left) >= containerWidth * 0.8) {
+                // 验证成功，滑块吸附到最右端
+                sliderBtn.style.left = `${containerWidth - 50}px`;
+                sliderBg.style.width = `${containerWidth}px`;
+                verifySuccess.style.display = 'block';
+                // 1秒后关闭弹窗并解锁窗口
+                setTimeout(() => {
+                    verifyModal.style.display = 'none';
+                    document.body.style.overflow = '';
+                    document.body.style.touchAction = 'auto';
+                    // 跳转链接
+                    const newWindow = window.open(targetLink, '_blank');
+                    if (newWindow) newWindow.onload = () => newWindow.location.reload();
+                }, 1000);
+            } else {
+                // 验证失败，滑块复位
+                sliderBtn.style.left = '0';
+                sliderBg.style.width = '0';
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            updateTimeDisplay();
+            setInterval(updateTimeDisplay, 1000);
+            // 绑定事件
+            sliderBtn.addEventListener('mousedown', startDrag);
+            sliderBtn.addEventListener('touchstart', startDrag);
+            document.addEventListener('mousemove', dragMove);
+            document.addEventListener('touchmove', dragMove);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+            // 点击遮罩层空白处，滑块复位（保持锁定）
+            verifyModal.addEventListener('click', (e) => {
+                if (e.target === verifyModal) {
+                    sliderBtn.style.left = '0';
+                    sliderBg.style.width = '0';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
